@@ -9,7 +9,7 @@ app.use(cookieParser());
 
 app.use(
     cors({
-        origin: "http://localhost:5173",
+        origin: "https://ai-interview-prep-resume-analyzer-nu.vercel.app",
         credentials: true,
     })
 );
