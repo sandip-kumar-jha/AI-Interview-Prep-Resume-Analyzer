@@ -5,27 +5,20 @@ const cors = require("cors");
 const app = express();
 
 // ===============================
-// MIDDLEWARE
-// ===============================
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-
-// ===============================
 // CORS
 // ===============================
 
 const allowedOrigins = [
+    "http://localhost:5173",
     "https://ai-interview-prep-resume-analyzer-psi.vercel.app",
-    
+    "https://ai-interview-prep-resume-analyzer-nu.vercel.app",
 ];
 
 app.use(
     cors({
         origin: function (origin, callback) {
-            // Allow requests without origin
-            // (Postman, server-to-server etc.)
+            // Allow requests without an origin
+            // Postman, curl, server-to-server etc.
             if (!origin) {
                 return callback(null, true);
             }
@@ -34,18 +27,38 @@ app.use(
                 return callback(null, true);
             }
 
+            console.log("CORS blocked origin:", origin);
+
             return callback(
                 new Error("Not allowed by CORS")
             );
         },
+
         credentials: true,
-        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+
+        methods: [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "OPTIONS",
+        ],
+
         allowedHeaders: [
             "Content-Type",
             "Authorization",
         ],
     })
 );
+
+// ===============================
+// MIDDLEWARE
+// ===============================
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // ===============================
 // ROUTES
@@ -64,7 +77,28 @@ app.use("/api/interview", interviewRouter);
 app.get("/", (req, res) => {
     res.status(200).json({
         success: true,
-        message: "AI Interview Prep Resume Analyzer API is running",
+        message:
+            "AI Interview Prep Resume Analyzer API is running",
+    });
+});
+
+// ===============================
+// ERROR HANDLER
+// ===============================
+
+app.use((err, req, res, next) => {
+    console.error("SERVER ERROR:", err.message);
+
+    if (err.message === "Not allowed by CORS") {
+        return res.status(403).json({
+            success: false,
+            message: "CORS origin not allowed",
+        });
+    }
+
+    return res.status(500).json({
+        success: false,
+        message: "Internal Server Error",
     });
 });
 
