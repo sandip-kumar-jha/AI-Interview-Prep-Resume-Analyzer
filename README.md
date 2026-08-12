@@ -261,3 +261,217 @@ behavioralQuestions
 skillGaps
 preparationPlan
 title
+
+🔐 Environment Variables
+
+Create a .env file inside the backend directory.
+
+GOOGLE_GENAI_API_KEY=your_gemini_api_key
+MONGO_URI=your_mongodb_connection_string
+GEMINI_MODEL=gemini-3-flash-preview
+
+⚠️ Never upload .env to GitHub.
+
+Add the following to .gitignore:
+
+node_modules/
+.env
+.env.local
+dist/
+build/
+🚀 Installation
+1. Clone Repository
+git clone https://github.com/sandip-kumar-jha/AI-Interview-Prep-Resume-Analyzer.git
+cd AI-Interview-Prep-Resume-Analyzer
+2. Backend Setup
+cd backend
+
+Install dependencies:
+
+npm install
+
+Create .env:
+
+GOOGLE_GENAI_API_KEY=your_api_key
+MONGO_URI=your_mongodb_uri
+GEMINI_MODEL=gemini-3-flash-preview
+
+Start backend:
+
+npm run dev
+
+Backend:
+
+http://localhost:3000
+3. Frontend Setup
+
+Open another terminal:
+
+cd frontend
+
+Install dependencies:
+
+npm install
+
+Start frontend:
+
+npm run dev
+🔄 Application Flow
+1. User creates an account
+        ↓
+2. User uploads resume
+        ↓
+3. User enters self-description
+        ↓
+4. User enters target job description
+        ↓
+5. Backend receives the request
+        ↓
+6. Resume + profile + job description
+   are processed
+        ↓
+7. Google Gemini generates analysis
+        ↓
+8. Backend validates AI response
+        ↓
+9. Interview report is stored in MongoDB
+        ↓
+10. React displays personalized report
+        ↓
+11. User can generate ATS resume PDF
+🎯 Example Use Case
+Target Role
+Full Stack Developer
+Candidate Skills
+HTML
+CSS
+JavaScript
+React
+Node.js
+Express.js
+MongoDB
+SQL
+Python
+Git
+GitHub
+
+The application analyzes the candidate against the target job and generates:
+
+🎯 Match Score
+        ↓
+💻 Technical Questions
+        ↓
+👥 Behavioral Questions
+        ↓
+📊 Skill Gaps
+        ↓
+📅 Preparation Roadmap
+        ↓
+📄 ATS Resume
+🧠 AI Engineering Highlights
+
+This project demonstrates practical implementation of:
+
+Generative AI
+Google Gemini API
+Prompt Engineering
+Structured AI Output
+JSON Schema Validation
+Zod Validation
+AI Response Normalization
+Resume Analysis
+Job Description Matching
+Interview Question Generation
+Behavioral Answer Generation
+Skill Gap Detection
+REST API Development
+Error Handling
+Retry Mechanisms
+PDF Generation
+MongoDB Data Persistence
+🛡️ Error Handling
+
+The backend handles:
+
+Invalid AI responses
+Empty AI responses
+Invalid JSON
+Gemini API failures
+Temporary API failures
+Database validation errors
+Missing job descriptions
+Invalid resume input
+PDF generation errors
+
+Gemini requests also support retry handling for temporary API failures.
+
+📈 Future Improvements
+🎤 AI Mock Interview
+🎙️ Voice-based Interview
+🗣️ Speech-to-Text
+📊 Interview Performance Analytics
+⭐ AI Answer Scoring
+🧠 DSA Question Generator
+💼 Job Recommendation System
+📧 Job Application Tracker
+🔗 LinkedIn Profile Analyzer
+📄 Advanced ATS Score
+🌐 Multi-language Interview Support
+🎥 AI Video Interview Analysis
+💼 Why I Built This Project
+
+Job seekers often prepare using generic interview questions that do not match their actual resume or the requirements of a specific job.
+
+This project solves that problem by combining:
+
+Candidate Profile
+        +
+Resume
+        +
+Job Description
+        ↓
+Google Gemini AI
+        ↓
+Personalized Interview Preparation
+
+Instead of generic preparation, candidates receive job-specific questions, answers, skill-gap analysis, and a preparation roadmap.
+
+📌 Resume Project Description
+AI Interview Prep & Resume Analyzer
+
+React.js • Node.js • Express.js • MongoDB • Google Gemini AI • Puppeteer
+
+Built a full-stack AI-powered platform that analyzes resumes and job descriptions to generate personalized interview preparation reports.
+Integrated Google Gemini AI to generate technical and behavioral interview questions, interview-ready answers, job match scores, skill-gap analysis, and personalized preparation plans.
+Implemented REST APIs, MongoDB persistence, resume file uploads, structured AI response validation, and automated ATS-friendly resume PDF generation using Puppeteer.
+⭐ Project Highlights
+🤖 Generative AI Integration
+📄 Resume Analysis
+💼 Job Description Matching
+🎯 AI Match Score
+💻 Technical Interview Questions
+👥 Behavioral Interview Preparation
+📊 Skill Gap Analysis
+📅 Personalized Preparation Plan
+📑 ATS Resume Generator
+📥 PDF Generation
+🔐 Authentication
+🗄️ MongoDB Database
+⚡ REST APIs
+🎨 Modern React UI
+👨‍💻 Developer
+<div align="center">
+Sandip Kumar Jha
+
+BSc Computer Science & Data Analytics — IIT Patna
+
+Full Stack Developer | Data Analytics | Generative AI
+</div>
+📜 License
+
+This project is developed for educational, portfolio, and career-development purposes.
+
+<div align="center">
+⭐ If you find this project useful, consider giving it a star!
+Built with ❤️ using React, Node.js, MongoDB & Google Gemini AI
+</div> ```
