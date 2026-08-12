@@ -1,66 +1,106 @@
 import { useContext, useEffect } from "react";
 import { AuthContext } from "../auth.context";
-import { login, register, logout, getMe } from "../services/auth.api";
-
-
+import {
+    login,
+    register,
+    logout,
+    getMe,
+} from "../services/auth.api";
 
 export const useAuth = () => {
+    const context = useContext(AuthContext);
 
-    const context = useContext(AuthContext)
-    const { user, setUser, loading, setLoading } = context
-
+    const {
+        user,
+        setUser,
+        loading,
+        setLoading,
+    } = context;
 
     const handleLogin = async ({ email, password }) => {
-        setLoading(true)
+        setLoading(true);
+
         try {
-            const data = await login({ email, password })
-            setUser(data.user)
+            const data = await login({
+                email,
+                password,
+            });
+
+            setUser(data.user);
+
+            return data;
         } catch (err) {
-
+            console.error("Login failed:", err);
+            throw err;
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
-    const handleRegister = async ({ username, email, password }) => {
-        setLoading(true)
+    const handleRegister = async ({
+        username,
+        email,
+        password,
+    }) => {
+        setLoading(true);
+
         try {
-            const data = await register({ username, email, password })
-            setUser(data.user)
-        } catch (err) {
+            const data = await register({
+                username,
+                email,
+                password,
+            });
 
+            setUser(data.user);
+
+            return data;
+        } catch (err) {
+            console.error("Registration failed:", err);
+            throw err;
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     const handleLogout = async () => {
-        setLoading(true)
-        try {
-            const data = await logout()
-            setUser(null)
-        } catch (err) {
+        setLoading(true);
 
+        try {
+            await logout();
+            setUser(null);
+        } catch (err) {
+            console.error("Logout failed:", err);
         } finally {
-            setLoading(false)
+            setLoading(false);
         }
-    }
+    };
 
     useEffect(() => {
-
         const getAndSetUser = async () => {
             try {
+                const data = await getMe();
 
-                const data = await getMe()
-                setUser(data.user)
-            } catch (err) { } finally {
-                setLoading(false)
+                if (data?.user) {
+                    setUser(data.user);
+                } else {
+                    setUser(null);
+                }
+            } catch (err) {
+                // 401 simply means user is not logged in
+                setUser(null);
+            } finally {
+                setLoading(false);
             }
-        }
+        };
 
-        getAndSetUser()
+        getAndSetUser();
+    }, [setUser, setLoading]);
 
-    }, [])
-
-    return { user, loading, handleRegister, handleLogin, handleLogout }
-}
+    return {
+        user,
+        loading,
+        handleRegister,
+        handleLogin,
+        handleLogout,
+    };
+};
