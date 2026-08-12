@@ -1,11 +1,5 @@
 const express = require("express");
 
-const router = express.Router();
-
-// ======================================================
-// CONTROLLERS
-// ======================================================
-
 const {
     generateInterViewReportController,
     getInterviewReportByIdController,
@@ -13,23 +7,21 @@ const {
     generateResumePdfController,
 } = require("../controllers/interview.controller");
 
-// ======================================================
-// AUTH MIDDLEWARE
-// ======================================================
-
 const { authUser } = require("../middlewares/auth.middleware");
 
-// ======================================================
-// MULTER
-// ======================================================
-
 const multer = require("multer");
+
+const router = express.Router();
+
+// ======================================================
+// MULTER CONFIG
+// ======================================================
 
 const upload = multer({
     storage: multer.memoryStorage(),
 
     limits: {
-        fileSize: 5 * 1024 * 1024,
+        fileSize: 5 * 1024 * 1024, // 5 MB
     },
 
     fileFilter: (req, file, cb) => {
@@ -37,7 +29,9 @@ const upload = multer({
             cb(null, true);
         } else {
             cb(
-                new Error("Only PDF files are allowed."),
+                new Error(
+                    "Only PDF resume files are allowed."
+                ),
                 false
             );
         }
@@ -46,11 +40,11 @@ const upload = multer({
 
 // ======================================================
 // GENERATE INTERVIEW REPORT
-// POST /api/interview/generate
+// POST /api/interview/
 // ======================================================
 
 router.post(
-    "/generate",
+    "/",
     authUser,
     upload.single("resume"),
     generateInterViewReportController
@@ -68,39 +62,6 @@ router.get(
 );
 
 // ======================================================
-// ALSO SUPPORT /api/interview/reports
-// GET /api/interview/reports
-// ======================================================
-
-router.get(
-    "/reports",
-    authUser,
-    getAllInterviewReportsController
-);
-
-// ======================================================
-// GET SINGLE INTERVIEW REPORT
-// GET /api/interview/reports/:interviewId
-// ======================================================
-
-router.get(
-    "/reports/:interviewId",
-    authUser,
-    getInterviewReportByIdController
-);
-
-// ======================================================
-// GET SINGLE INTERVIEW REPORT
-// ALSO SUPPORT /api/interview/:interviewId
-// ======================================================
-
-router.get(
-    "/:interviewId",
-    authUser,
-    getInterviewReportByIdController
-);
-
-// ======================================================
 // GENERATE RESUME PDF
 // GET /api/interview/resume/pdf/:interviewReportId
 // ======================================================
@@ -112,30 +73,32 @@ router.get(
 );
 
 // ======================================================
-// MULTER ERROR HANDLER
+// GET SINGLE INTERVIEW REPORT
+// GET /api/interview/:interviewId
+// ======================================================
+
+router.get(
+    "/:interviewId",
+    authUser,
+    getInterviewReportByIdController
+);
+
+// ======================================================
+// MULTER / ROUTE ERROR HANDLER
 // ======================================================
 
 router.use((error, req, res, next) => {
-    if (error instanceof multer.MulterError) {
-        if (error.code === "LIMIT_FILE_SIZE") {
-            return res.status(400).json({
-                message:
-                    "Resume file is too large. Maximum allowed size is 5 MB.",
-            });
-        }
+    console.error(
+        "INTERVIEW ROUTE ERROR:",
+        error
+    );
 
-        return res.status(400).json({
-            message: error.message,
-        });
-    }
-
-    if (error) {
-        return res.status(400).json({
-            message: error.message,
-        });
-    }
-
-    next();
+    return res.status(400).json({
+        success: false,
+        message:
+            error.message ||
+            "Interview request failed.",
+    });
 });
 
 // ======================================================
