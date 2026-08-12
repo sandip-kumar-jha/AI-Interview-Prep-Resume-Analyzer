@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "http://localhost:3000",
+    baseURL: import.meta.env.VITE_API_URL,
     withCredentials: true,
 });
 
@@ -17,19 +17,19 @@ export const generateInterviewReport = async ({
     try {
         const formData = new FormData();
 
-        // Always append job description
+        // Job Description
         formData.append(
             "jobDescription",
             jobDescription || ""
         );
 
-        // Always append self description
+        // Self Description
         formData.append(
             "selfDescription",
             selfDescription || ""
         );
 
-        // Append resume only if selected
+        // Resume File
         if (resumeFile instanceof File) {
             formData.append(
                 "resume",
@@ -54,10 +54,6 @@ export const generateInterviewReport = async ({
             formData,
             {
                 withCredentials: true,
-
-                // Do NOT manually set Content-Type.
-                // Axios/browser will automatically add:
-                // multipart/form-data; boundary=...
             }
         );
 
@@ -69,7 +65,6 @@ export const generateInterviewReport = async ({
         return response.data;
 
     } catch (error) {
-
         console.error(
             "GENERATE INTERVIEW REPORT API ERROR:",
             error
@@ -92,7 +87,6 @@ export const getInterviewReportById = async (
     interviewId
 ) => {
     try {
-
         const response = await api.get(
             `/api/interview/report/${interviewId}`
         );
@@ -100,10 +94,14 @@ export const getInterviewReportById = async (
         return response.data;
 
     } catch (error) {
-
         console.error(
             "GET INTERVIEW REPORT ERROR:",
             error
+        );
+
+        console.error(
+            "Server response:",
+            error?.response?.data
         );
 
         throw error;
@@ -114,25 +112,29 @@ export const getInterviewReportById = async (
 // Get All Interview Reports
 // ==========================================
 
-export const getAllInterviewReports = async () => {
-    try {
+export const getAllInterviewReports =
+    async () => {
+        try {
+            const response = await api.get(
+                "/api/interview/"
+            );
 
-        const response = await api.get(
-            "/api/interview/"
-        );
+            return response.data;
 
-        return response.data;
+        } catch (error) {
+            console.error(
+                "GET ALL INTERVIEW REPORTS ERROR:",
+                error
+            );
 
-    } catch (error) {
+            console.error(
+                "Server response:",
+                error?.response?.data
+            );
 
-        console.error(
-            "GET ALL INTERVIEW REPORTS ERROR:",
-            error
-        );
-
-        throw error;
-    }
-};
+            throw error;
+        }
+    };
 
 // ==========================================
 // Generate Resume PDF
@@ -142,7 +144,6 @@ export const generateResumePdf = async ({
     interviewReportId,
 }) => {
     try {
-
         const response = await api.post(
             `/api/interview/resume/pdf/${interviewReportId}`,
             null,
@@ -155,12 +156,22 @@ export const generateResumePdf = async ({
         return response.data;
 
     } catch (error) {
-
         console.error(
             "GENERATE RESUME PDF ERROR:",
             error
         );
 
+        console.error(
+            "Server response:",
+            error?.response?.data
+        );
+
         throw error;
     }
 };
+
+// ==========================================
+// Export API instance
+// ==========================================
+
+export default api;
