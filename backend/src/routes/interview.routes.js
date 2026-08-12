@@ -13,7 +13,7 @@ const { authUser } = require("../middlewares/auth.middleware");
 const router = express.Router();
 
 // ======================================================
-// MULTER
+// MULTER CONFIG
 // ======================================================
 
 const upload = multer({
@@ -28,7 +28,9 @@ const upload = multer({
             cb(null, true);
         } else {
             cb(
-                new Error("Only PDF resume files are allowed."),
+                new Error(
+                    "Only PDF resume files are allowed."
+                ),
                 false
             );
         }
