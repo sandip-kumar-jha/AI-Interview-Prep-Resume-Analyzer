@@ -17,8 +17,8 @@ app.use(cookieParser());
 // ===============================
 
 const allowedOrigins = [
-    "https://ai-interview-prep-resume-analyzer-nu.vercel.app",
-    "http://localhost:5173",
+    "https://ai-interview-prep-resume-analyzer-psi.vercel.app",
+    
 ];
 
 app.use(
