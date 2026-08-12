@@ -29,7 +29,7 @@ const upload = multer({
     storage: multer.memoryStorage(),
 
     limits: {
-        fileSize: 5 * 1024 * 1024, // 5 MB
+        fileSize: 5 * 1024 * 1024,
     },
 
     fileFilter: (req, file, cb) => {
@@ -58,6 +58,17 @@ router.post(
 
 // ======================================================
 // GET ALL INTERVIEW REPORTS
+// GET /api/interview/
+// ======================================================
+
+router.get(
+    "/",
+    authUser,
+    getAllInterviewReportsController
+);
+
+// ======================================================
+// ALSO SUPPORT /api/interview/reports
 // GET /api/interview/reports
 // ======================================================
 
@@ -74,6 +85,17 @@ router.get(
 
 router.get(
     "/reports/:interviewId",
+    authUser,
+    getInterviewReportByIdController
+);
+
+// ======================================================
+// GET SINGLE INTERVIEW REPORT
+// ALSO SUPPORT /api/interview/:interviewId
+// ======================================================
+
+router.get(
+    "/:interviewId",
     authUser,
     getInterviewReportByIdController
 );
