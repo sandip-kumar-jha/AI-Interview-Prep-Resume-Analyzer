@@ -12,9 +12,22 @@ const { authUser } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
-// ======================================================
-// MULTER CONFIG
-// ======================================================
+
+// ===============================
+// PDF TEST ROUTE
+// ===============================
+
+router.get("/resume/pdf-test", (req, res) => {
+    return res.status(200).json({
+        success: true,
+        message: "PDF route is working",
+    });
+});
+
+
+// ===============================
+// MULTER
+// ===============================
 
 const upload = multer({
     storage: multer.memoryStorage(),
@@ -37,22 +50,10 @@ const upload = multer({
     },
 });
 
-// ======================================================
-// TEST
-// GET /api/interview/test
-// ======================================================
 
-router.get("/test", (req, res) => {
-    return res.status(200).json({
-        success: true,
-        message: "Interview route is working",
-    });
-});
-
-// ======================================================
-// GENERATE INTERVIEW REPORT
-// POST /api/interview/
-// ======================================================
+// ===============================
+// INTERVIEW ROUTES
+// ===============================
 
 router.post(
     "/",
@@ -61,21 +62,11 @@ router.post(
     generateInterViewReportController
 );
 
-// ======================================================
-// GET ALL REPORTS
-// GET /api/interview/
-// ======================================================
-
 router.get(
     "/",
     authUser,
     getAllInterviewReportsController
 );
-
-// ======================================================
-// GET SINGLE REPORT
-// GET /api/interview/report/:interviewId
-// ======================================================
 
 router.get(
     "/report/:interviewId",
@@ -83,20 +74,16 @@ router.get(
     getInterviewReportByIdController
 );
 
-// ======================================================
-// GENERATE RESUME PDF
-// GET /api/interview/resume/pdf/:interviewReportId
-// ======================================================
-
 router.get(
     "/resume/pdf/:interviewReportId",
     authUser,
     generateResumePdfController
 );
 
-// ======================================================
+
+// ===============================
 // ERROR HANDLER
-// ======================================================
+// ===============================
 
 router.use((error, req, res, next) => {
     console.error("INTERVIEW ROUTE ERROR:", error);
