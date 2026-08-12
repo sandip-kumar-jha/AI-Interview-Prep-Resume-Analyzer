@@ -3,9 +3,10 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const tokenBlacklistModel = require("../models/blacklist.model");
 
-/**
- * Create JWT token
- */
+// ======================================================
+// CREATE JWT TOKEN
+// ======================================================
+
 function createToken(user) {
     return jwt.sign(
         {
@@ -19,34 +20,57 @@ function createToken(user) {
     );
 }
 
-/**
- * Cookie options for local development
- */
+// ======================================================
+// COOKIE OPTIONS
+// ======================================================
+
 const cookieOptions = {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+
+    // Production: Vercel -> Render
+    secure: process.env.NODE_ENV === "production",
+
+    // Required for cross-site cookie
+    sameSite:
+        process.env.NODE_ENV === "production"
+            ? "none"
+            : "lax",
+
     maxAge: 24 * 60 * 60 * 1000,
+
+    path: "/",
 };
 
-/**
- * @name registerUserController
- * @description Register a new user
- * @access Public
- */
+// ======================================================
+// REGISTER USER
+// ======================================================
+
 async function registerUserController(req, res) {
     try {
-        const { username, email, password } = req.body;
+        const {
+            username,
+            email,
+            password,
+        } = req.body;
 
-        if (!username || !email || !password) {
+        if (
+            !username ||
+            !email ||
+            !password
+        ) {
             return res.status(400).json({
-                message: "Please provide username, email and password",
+                message:
+                    "Please provide username, email and password",
             });
         }
 
-        const isUserAlreadyExists = await userModel.findOne({
-            $or: [{ username }, { email }],
-        });
+        const isUserAlreadyExists =
+            await userModel.findOne({
+                $or: [
+                    { username },
+                    { email },
+                ],
+            });
 
         if (isUserAlreadyExists) {
             return res.status(400).json({
@@ -55,154 +79,241 @@ async function registerUserController(req, res) {
             });
         }
 
-        const hash = await bcrypt.hash(password, 10);
+        const hash =
+            await bcrypt.hash(
+                password,
+                10
+            );
 
-        const user = await userModel.create({
-            username,
-            email,
-            password: hash,
-        });
+        const user =
+            await userModel.create({
+                username,
+                email,
+                password: hash,
+            });
 
-        const token = createToken(user);
+        const token =
+            createToken(user);
 
-        res.cookie("token", token, cookieOptions);
+        res.cookie(
+            "token",
+            token,
+            cookieOptions
+        );
 
         return res.status(201).json({
-            message: "User registered successfully",
+            message:
+                "User registered successfully",
+
             user: {
                 id: user._id,
-                username: user.username,
+                username:
+                    user.username,
                 email: user.email,
             },
         });
     } catch (error) {
-        console.error("Register Error:", error);
+        console.error(
+            "Register Error:",
+            error
+        );
 
         return res.status(500).json({
-            message: "Something went wrong while registering user",
+            message:
+                "Something went wrong while registering user",
         });
     }
 }
 
-/**
- * @name loginUserController
- * @description Login user with email and password
- * @access Public
- */
+// ======================================================
+// LOGIN USER
+// ======================================================
+
 async function loginUserController(req, res) {
     try {
-        const { email, password } = req.body;
+        const {
+            email,
+            password,
+        } = req.body;
 
-        if (!email || !password) {
+        if (
+            !email ||
+            !password
+        ) {
             return res.status(400).json({
-                message: "Email and password are required",
+                message:
+                    "Email and password are required",
             });
         }
 
-        const user = await userModel.findOne({ email });
+        const user =
+            await userModel.findOne({
+                email,
+            });
 
         if (!user) {
             return res.status(400).json({
-                message: "Invalid email or password",
+                message:
+                    "Invalid email or password",
             });
         }
 
-        const isPasswordValid = await bcrypt.compare(
-            password,
-            user.password
-        );
+        const isPasswordValid =
+            await bcrypt.compare(
+                password,
+                user.password
+            );
 
         if (!isPasswordValid) {
             return res.status(400).json({
-                message: "Invalid email or password",
+                message:
+                    "Invalid email or password",
             });
         }
 
-        const token = createToken(user);
+        const token =
+            createToken(user);
 
-        res.cookie("token", token, cookieOptions);
+        res.cookie(
+            "token",
+            token,
+            cookieOptions
+        );
 
         return res.status(200).json({
-            message: "User loggedIn successfully.",
+            message:
+                "User loggedIn successfully.",
+
             user: {
                 id: user._id,
-                username: user.username,
+                username:
+                    user.username,
                 email: user.email,
             },
         });
     } catch (error) {
-        console.error("Login Error:", error);
+        console.error(
+            "Login Error:",
+            error
+        );
 
         return res.status(500).json({
-            message: "Something went wrong while logging in",
+            message:
+                "Something went wrong while logging in",
         });
     }
 }
 
-/**
- * @name logoutUserController
- * @description Logout user and blacklist current token
- * @access Public
- */
+// ======================================================
+// LOGOUT USER
+// ======================================================
+
 async function logoutUserController(req, res) {
     try {
-        const token = req.cookies.token;
+        const token =
+            req.cookies?.token;
 
         if (token) {
-            await tokenBlacklistModel.create({
-                token,
+            try {
+                await tokenBlacklistModel.create({
+                    token,
+                });
+            } catch (blacklistError) {
+                console.error(
+                    "Blacklist Error:",
+                    blacklistError
+                );
+            }
+        }
+
+        res.clearCookie(
+            "token",
+            {
+                httpOnly: true,
+
+                secure:
+                    process.env.NODE_ENV ===
+                    "production",
+
+                sameSite:
+                    process.env.NODE_ENV ===
+                    "production"
+                        ? "none"
+                        : "lax",
+
+                path: "/",
+            }
+        );
+
+        return res.status(200).json({
+            message:
+                "User logged out successfully",
+        });
+    } catch (error) {
+        console.error(
+            "Logout Error:",
+            error
+        );
+
+        return res.status(500).json({
+            message:
+                "Something went wrong while logging out",
+        });
+    }
+}
+
+// ======================================================
+// GET CURRENT USER
+// ======================================================
+
+async function getMeController(req, res) {
+    try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({
+                message:
+                    "Authentication required",
             });
         }
 
-        res.clearCookie("token", {
-            httpOnly: true,
-            secure: false,
-            sameSite: "lax",
-        });
-
-        return res.status(200).json({
-            message: "User logged out successfully",
-        });
-    } catch (error) {
-        console.error("Logout Error:", error);
-
-        return res.status(500).json({
-            message: "Something went wrong while logging out",
-        });
-    }
-}
-
-/**
- * @name getMeController
- * @description Get current logged-in user details
- * @access Private
- */
-async function getMeController(req, res) {
-    try {
-        const user = await userModel.findById(req.user.id);
+        const user =
+            await userModel.findById(
+                req.user.id
+            );
 
         if (!user) {
             return res.status(404).json({
-                message: "User not found",
+                message:
+                    "User not found",
             });
         }
 
         return res.status(200).json({
-            message: "User details fetched successfully",
+            message:
+                "User details fetched successfully",
+
             user: {
                 id: user._id,
-                username: user.username,
+                username:
+                    user.username,
                 email: user.email,
             },
         });
     } catch (error) {
-        console.error("Get Me Error:", error);
+        console.error(
+            "Get Me Error:",
+            error
+        );
 
         return res.status(500).json({
-            message: "Something went wrong while fetching user",
+            message:
+                "Something went wrong while fetching user",
         });
     }
 }
+
+// ======================================================
+// EXPORT
+// ======================================================
 
 module.exports = {
     registerUserController,
