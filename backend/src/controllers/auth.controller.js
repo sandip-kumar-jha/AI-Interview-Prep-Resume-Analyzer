@@ -24,8 +24,7 @@ function createToken(user) {
 // COOKIE OPTIONS
 // ======================================================
 
-const isProduction =
-    process.env.NODE_ENV === "production";
+const isProduction = process.env.NODE_ENV === "production";
 
 const cookieOptions = {
     httpOnly: true,
@@ -41,19 +40,30 @@ const cookieOptions = {
 
 async function registerUserController(req, res) {
     try {
+        console.log("REGISTER BODY:", req.body);
+
         const { username, email, password } = req.body;
 
         if (!username || !email || !password) {
             return res.status(400).json({
-                message:
-                    "Please provide username, email and password",
+                message: "Please provide username, email and password",
             });
         }
 
-        const isUserAlreadyExists =
-            await userModel.findOne({
-                $or: [{ username }, { email }],
-            });
+        const normalizedUsername = username.trim();
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const isUserAlreadyExists = await userModel.findOne({
+            $or: [
+                { username: normalizedUsername },
+                { email: normalizedEmail },
+            ],
+        });
+
+        console.log(
+            "EXISTING USER:",
+            isUserAlreadyExists ? isUserAlreadyExists._id : null
+        );
 
         if (isUserAlreadyExists) {
             return res.status(400).json({
@@ -65,8 +75,8 @@ async function registerUserController(req, res) {
         const hash = await bcrypt.hash(password, 10);
 
         const user = await userModel.create({
-            username,
-            email,
+            username: normalizedUsername,
+            email: normalizedEmail,
             password: hash,
         });
 
@@ -86,8 +96,7 @@ async function registerUserController(req, res) {
         console.error("Register Error:", error);
 
         return res.status(500).json({
-            message:
-                "Something went wrong while registering user",
+            message: "Something went wrong while registering user",
         });
     }
 }
@@ -98,16 +107,26 @@ async function registerUserController(req, res) {
 
 async function loginUserController(req, res) {
     try {
+        console.log("LOGIN BODY:", req.body);
+
         const { email, password } = req.body;
 
         if (!email || !password) {
             return res.status(400).json({
-                message:
-                    "Email and password are required",
+                message: "Email and password are required",
             });
         }
 
-        const user = await userModel.findOne({ email });
+        const normalizedEmail = email.trim().toLowerCase();
+
+        const user = await userModel.findOne({
+            email: normalizedEmail,
+        });
+
+        console.log(
+            "LOGIN USER FOUND:",
+            user ? user._id : null
+        );
 
         if (!user) {
             return res.status(400).json({
@@ -115,11 +134,15 @@ async function loginUserController(req, res) {
             });
         }
 
-        const isPasswordValid =
-            await bcrypt.compare(
-                password,
-                user.password
-            );
+        const isPasswordValid = await bcrypt.compare(
+            password,
+            user.password
+        );
+
+        console.log(
+            "PASSWORD VALID:",
+            isPasswordValid
+        );
 
         if (!isPasswordValid) {
             return res.status(400).json({
@@ -136,8 +159,7 @@ async function loginUserController(req, res) {
         );
 
         return res.status(200).json({
-            message:
-                "User loggedIn successfully.",
+            message: "User loggedIn successfully.",
             user: {
                 id: user._id,
                 username: user.username,
@@ -148,8 +170,7 @@ async function loginUserController(req, res) {
         console.error("Login Error:", error);
 
         return res.status(500).json({
-            message:
-                "Something went wrong while logging in",
+            message: "Something went wrong while logging in",
         });
     }
 }
@@ -178,22 +199,18 @@ async function logoutUserController(req, res) {
         res.clearCookie("token", {
             httpOnly: true,
             secure: isProduction,
-            sameSite: isProduction
-                ? "none"
-                : "lax",
+            sameSite: isProduction ? "none" : "lax",
             path: "/",
         });
 
         return res.status(200).json({
-            message:
-                "User logged out successfully",
+            message: "User logged out successfully",
         });
     } catch (error) {
         console.error("Logout Error:", error);
 
         return res.status(500).json({
-            message:
-                "Something went wrong while logging out",
+            message: "Something went wrong while logging out",
         });
     }
 }
@@ -210,10 +227,9 @@ async function getMeController(req, res) {
             });
         }
 
-        const user =
-            await userModel.findById(
-                req.user.id
-            );
+        const user = await userModel.findById(
+            req.user.id
+        );
 
         if (!user) {
             return res.status(404).json({
@@ -222,8 +238,7 @@ async function getMeController(req, res) {
         }
 
         return res.status(200).json({
-            message:
-                "User details fetched successfully",
+            message: "User details fetched successfully",
             user: {
                 id: user._id,
                 username: user.username,

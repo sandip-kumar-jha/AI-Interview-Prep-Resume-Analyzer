@@ -18,8 +18,8 @@ export async function register({
         const response = await api.post(
             "/api/auth/register",
             {
-                username,
-                email,
+                username: username.trim(),
+                email: email.trim().toLowerCase(),
                 password,
             }
         );
@@ -52,7 +52,7 @@ export async function login({
         const response = await api.post(
             "/api/auth/login",
             {
-                email,
+                email: email.trim().toLowerCase(),
                 password,
             }
         );
