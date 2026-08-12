@@ -1,43 +1,47 @@
-const jwt = require("jsonwebtoken")
-const tokenBlacklistModel = require("../models/blacklist.model")
-
-
+const jwt = require("jsonwebtoken");
+const tokenBlacklistModel = require("../models/blacklist.model");
 
 async function authUser(req, res, next) {
-
-    const token = req.cookies.token
-
-    if (!token) {
-        return res.status(401).json({
-            message: "Token not provided."
-        })
-    }
-
-    const isTokenBlacklisted = await tokenBlacklistModel.findOne({
-        token
-    })
-
-    if (isTokenBlacklisted) {
-        return res.status(401).json({
-            message: "token is invalid"
-        })
-    }
-
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
+        const token = req.cookies?.token;
 
-        req.user = decoded
+        if (!token) {
+            return res.status(401).json({
+                message: "Token not provided.",
+            });
+        }
 
-        next()
+        const isTokenBlacklisted =
+            await tokenBlacklistModel.findOne({
+                token,
+            });
 
-    } catch (err) {
+        if (isTokenBlacklisted) {
+            return res.status(401).json({
+                message: "Token is invalid.",
+            });
+        }
+
+        const decoded = jwt.verify(
+            token,
+            process.env.JWT_SECRET
+        );
+
+        req.user = decoded;
+
+        next();
+    } catch (error) {
+        console.error(
+            "Auth Middleware Error:",
+            error.message
+        );
 
         return res.status(401).json({
-            message: "Invalid token."
-        })
+            message: "Invalid or expired token.",
+        });
     }
-
 }
 
-
-module.exports = { authUser }
+module.exports = {
+    authUser,
+};
