@@ -83,7 +83,7 @@ router.get(
 );
 
 // ======================================================
-// MULTER / ROUTE ERROR HANDLER
+// ERROR HANDLER
 // ======================================================
 
 router.use((error, req, res, next) => {
@@ -93,6 +93,7 @@ router.use((error, req, res, next) => {
     );
 
     return res.status(400).json({
+        success: false,
         message:
             error?.message ||
             "Interview request failed.",
