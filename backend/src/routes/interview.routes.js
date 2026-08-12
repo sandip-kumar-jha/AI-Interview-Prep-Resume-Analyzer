@@ -1,4 +1,5 @@
 const express = require("express");
+const multer = require("multer");
 
 const {
     generateInterViewReportController,
@@ -8,8 +9,6 @@ const {
 } = require("../controllers/interview.controller");
 
 const { authUser } = require("../middlewares/auth.middleware");
-
-const multer = require("multer");
 
 const router = express.Router();
 
@@ -62,6 +61,17 @@ router.get(
 );
 
 // ======================================================
+// GET SINGLE INTERVIEW REPORT
+// GET /api/interview/report/:interviewId
+// ======================================================
+
+router.get(
+    "/report/:interviewId",
+    authUser,
+    getInterviewReportByIdController
+);
+
+// ======================================================
 // GENERATE RESUME PDF
 // GET /api/interview/resume/pdf/:interviewReportId
 // ======================================================
@@ -70,17 +80,6 @@ router.get(
     "/resume/pdf/:interviewReportId",
     authUser,
     generateResumePdfController
-);
-
-// ======================================================
-// GET SINGLE INTERVIEW REPORT
-// GET /api/interview/:interviewId
-// ======================================================
-
-router.get(
-    "/:interviewId",
-    authUser,
-    getInterviewReportByIdController
 );
 
 // ======================================================
@@ -94,15 +93,10 @@ router.use((error, req, res, next) => {
     );
 
     return res.status(400).json({
-        success: false,
         message:
-            error.message ||
+            error?.message ||
             "Interview request failed.",
     });
 });
-
-// ======================================================
-// EXPORT
-// ======================================================
 
 module.exports = router;

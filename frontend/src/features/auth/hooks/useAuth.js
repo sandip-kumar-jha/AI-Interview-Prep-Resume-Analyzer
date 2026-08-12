@@ -1,5 +1,6 @@
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useRef } from "react";
 import { AuthContext } from "../auth.context";
+
 import {
     login,
     register,
@@ -10,6 +11,12 @@ import {
 export const useAuth = () => {
     const context = useContext(AuthContext);
 
+    if (!context) {
+        throw new Error(
+            "useAuth must be used inside AuthProvider"
+        );
+    }
+
     const {
         user,
         setUser,
@@ -17,7 +24,14 @@ export const useAuth = () => {
         setLoading,
     } = context;
 
-    const handleLogin = async ({ email, password }) => {
+    // Prevent duplicate getMe calls
+    // especially in React StrictMode during development.
+    const hasFetchedUser = useRef(false);
+
+    const handleLogin = async ({
+        email,
+        password,
+    }) => {
         setLoading(true);
 
         try {
@@ -26,11 +40,17 @@ export const useAuth = () => {
                 password,
             });
 
-            setUser(data.user);
+            if (data?.user) {
+                setUser(data.user);
+            }
 
             return data;
         } catch (err) {
-            console.error("Login failed:", err);
+            console.error(
+                "Login failed:",
+                err
+            );
+
             throw err;
         } finally {
             setLoading(false);
@@ -51,11 +71,17 @@ export const useAuth = () => {
                 password,
             });
 
-            setUser(data.user);
+            if (data?.user) {
+                setUser(data.user);
+            }
 
             return data;
         } catch (err) {
-            console.error("Registration failed:", err);
+            console.error(
+                "Registration failed:",
+                err
+            );
+
             throw err;
         } finally {
             setLoading(false);
@@ -67,34 +93,78 @@ export const useAuth = () => {
 
         try {
             await logout();
+
             setUser(null);
         } catch (err) {
-            console.error("Logout failed:", err);
+            console.error(
+                "Logout failed:",
+                err
+            );
+
+            // Even if backend logout fails,
+            // remove the user from frontend state.
+            setUser(null);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
+        if (hasFetchedUser.current) {
+            return;
+        }
+
+        hasFetchedUser.current = true;
+
+        let isMounted = true;
+
         const getAndSetUser = async () => {
+            console.log(
+                "Checking authenticated user..."
+            );
+
             try {
                 const data = await getMe();
 
+                if (!isMounted) {
+                    return;
+                }
+
                 if (data?.user) {
+                    console.log(
+                        "Current user:",
+                        data.user
+                    );
+
                     setUser(data.user);
                 } else {
                     setUser(null);
                 }
             } catch (err) {
-                // 401 simply means user is not logged in
+                if (!isMounted) {
+                    return;
+                }
+
+                // 401 means user is not logged in.
+                // Do not treat it as a frontend crash.
+                console.log(
+                    "No authenticated user."
+                );
+
                 setUser(null);
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         getAndSetUser();
-    }, [setUser, setLoading]);
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     return {
         user,
