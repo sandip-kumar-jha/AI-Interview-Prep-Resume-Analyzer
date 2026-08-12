@@ -4,6 +4,10 @@ const cors = require("cors");
 
 const app = express();
 
+// ======================================================
+// CORS
+// ======================================================
+
 const allowedOrigins = [
     "http://localhost:5173",
     "https://ai-interview-prep-resume-analyzer-psi.vercel.app",
@@ -13,6 +17,7 @@ const allowedOrigins = [
 app.use(
     cors({
         origin: function (origin, callback) {
+            // Allow Postman, curl, server-to-server requests
             if (!origin) {
                 return callback(null, true);
             }
@@ -21,7 +26,7 @@ app.use(
                 return callback(null, true);
             }
 
-            console.log("CORS blocked origin:", origin);
+            console.log("CORS BLOCKED ORIGIN:", origin);
 
             return callback(
                 new Error("Not allowed by CORS")
@@ -46,8 +51,18 @@ app.use(
     })
 );
 
+// ======================================================
+// MIDDLEWARE
+// ======================================================
+
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+app.use(
+    express.urlencoded({
+        extended: true,
+    })
+);
+
 app.use(cookieParser());
 
 // ======================================================
@@ -89,7 +104,8 @@ app.use((err, req, res, next) => {
     return res.status(500).json({
         success: false,
         message:
-            err.message || "Internal Server Error",
+            err.message ||
+            "Internal Server Error",
     });
 });
 
