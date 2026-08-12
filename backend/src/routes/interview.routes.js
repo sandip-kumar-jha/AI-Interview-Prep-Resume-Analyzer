@@ -1,42 +1,98 @@
-const express = require("express")
-const authMiddleware = require("../middlewares/auth.middleware")
-const interviewController = require("../controllers/interview.controller")
-const upload = require("../middlewares/file.middleware")
+const express = require("express");
+const multer = require("multer");
 
-const interviewRouter = express.Router()
+const {
+    generateInterViewReportController,
+    getInterviewReportByIdController,
+    getAllInterviewReportsController,
+    generateResumePdfController,
+} = require("../controllers/interview.controller");
 
+const { authUser } = require("../middlewares/auth.middleware");
 
+const router = express.Router();
 
-/**
- * @route POST /api/interview/
- * @description generate new interview report on the basis of user self description,resume pdf and job description.
- * @access private
- */
-interviewRouter.post("/", authMiddleware.authUser, upload.single("resume"), interviewController.generateInterViewReportController)
+// ==========================================
+// MULTER
+// ==========================================
 
-/**
- * @route GET /api/interview/report/:interviewId
- * @description get interview report by interviewId.
- * @access private
- */
-interviewRouter.get("/report/:interviewId", authMiddleware.authUser, interviewController.getInterviewReportByIdController)
+const upload = multer({
+    storage: multer.memoryStorage(),
 
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+    },
 
-/**
- * @route GET /api/interview/
- * @description get all interview reports of logged in user.
- * @access private
- */
-interviewRouter.get("/", authMiddleware.authUser, interviewController.getAllInterviewReportsController)
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === "application/pdf") {
+            cb(null, true);
+        } else {
+            cb(
+                new Error("Only PDF resume files are allowed."),
+                false
+            );
+        }
+    },
+});
 
+// ==========================================
+// GENERATE INTERVIEW REPORT
+// POST /api/interview/
+// ==========================================
 
-/**
- * @route GET /api/interview/resume/pdf
- * @description generate resume pdf on the basis of user self description, resume content and job description.
- * @access private
- */
-interviewRouter.post("/resume/pdf/:interviewReportId", authMiddleware.authUser, interviewController.generateResumePdfController)
+router.post(
+    "/",
+    authUser,
+    upload.single("resume"),
+    generateInterViewReportController
+);
 
+// ==========================================
+// GET ALL REPORTS
+// GET /api/interview/
+// ==========================================
 
+router.get(
+    "/",
+    authUser,
+    getAllInterviewReportsController
+);
 
-module.exports = interviewRouter
+// ==========================================
+// GET SINGLE REPORT
+// GET /api/interview/report/:interviewId
+// ==========================================
+
+router.get(
+    "/report/:interviewId",
+    authUser,
+    getInterviewReportByIdController
+);
+
+// ==========================================
+// GENERATE RESUME PDF
+// GET /api/interview/resume/pdf/:interviewReportId
+// ==========================================
+
+router.get(
+    "/resume/pdf/:interviewReportId",
+    authUser,
+    generateResumePdfController
+);
+
+// ==========================================
+// MULTER / ROUTE ERROR
+// ==========================================
+
+router.use((error, req, res, next) => {
+    console.error("INTERVIEW ROUTE ERROR:", error);
+
+    return res.status(400).json({
+        success: false,
+        message:
+            error?.message ||
+            "Interview request failed.",
+    });
+});
+
+module.exports = router;

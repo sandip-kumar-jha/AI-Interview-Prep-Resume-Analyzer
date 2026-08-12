@@ -4,9 +4,9 @@ const cors = require("cors");
 
 const app = express();
 
-// ======================================================
+// ==========================================
 // CORS
-// ======================================================
+// ==========================================
 
 const allowedOrigins = [
     "http://localhost:5173",
@@ -17,7 +17,7 @@ const allowedOrigins = [
 app.use(
     cors({
         origin: function (origin, callback) {
-            // Allow Postman, curl, server-to-server requests
+            // Allow Postman / curl / server requests
             if (!origin) {
                 return callback(null, true);
             }
@@ -26,7 +26,7 @@ app.use(
                 return callback(null, true);
             }
 
-            console.log("CORS BLOCKED ORIGIN:", origin);
+            console.log("CORS blocked:", origin);
 
             return callback(
                 new Error("Not allowed by CORS")
@@ -51,23 +51,17 @@ app.use(
     })
 );
 
-// ======================================================
+// ==========================================
 // MIDDLEWARE
-// ======================================================
+// ==========================================
 
 app.use(express.json());
-
-app.use(
-    express.urlencoded({
-        extended: true,
-    })
-);
-
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// ======================================================
+// ==========================================
 // ROUTES
-// ======================================================
+// ==========================================
 
 const authRouter = require("./routes/auth.routes");
 const interviewRouter = require("./routes/interview.routes");
@@ -75,21 +69,31 @@ const interviewRouter = require("./routes/interview.routes");
 app.use("/api/auth", authRouter);
 app.use("/api/interview", interviewRouter);
 
-// ======================================================
-// HOME
-// ======================================================
+// ==========================================
+// HEALTH CHECK
+// ==========================================
 
 app.get("/", (req, res) => {
     res.status(200).json({
         success: true,
-        message:
-            "AI Interview Prep Resume Analyzer API is running",
+        message: "AI Interview Prep Resume Analyzer API is running",
     });
 });
 
-// ======================================================
+// ==========================================
+// INTERVIEW TEST
+// ==========================================
+
+app.get("/api/interview/test", (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "Interview route is working",
+    });
+});
+
+// ==========================================
 // ERROR HANDLER
-// ======================================================
+// ==========================================
 
 app.use((err, req, res, next) => {
     console.error("SERVER ERROR:", err);
@@ -103,9 +107,7 @@ app.use((err, req, res, next) => {
 
     return res.status(500).json({
         success: false,
-        message:
-            err.message ||
-            "Internal Server Error",
+        message: err.message || "Internal Server Error",
     });
 });
 
