@@ -1,114 +1,25 @@
-const express = require("express");
-const cookieParser = require("cookie-parser");
-const cors = require("cors");
+const express = require("express")
+const cookieParser = require("cookie-parser")
+const cors = require("cors")
 
-const app = express();
+const app = express()
 
-// ==========================================
-// CORS
-// ==========================================
+app.use(express.json())
+app.use(cookieParser())
+app.use(cors({
+    origin: "http://localhost:5173",
+    credentials: true
+}))
 
-const allowedOrigins = [
-    "http://localhost:5173",
-    "https://ai-interview-prep-resume-analyzer-psi.vercel.app",
-    "https://ai-interview-prep-resume-analyzer-nu.vercel.app",
-];
+/* require all the routes here */
+const authRouter = require("./routes/auth.routes")
+const interviewRouter = require("./routes/interview.routes")
 
-app.use(
-    cors({
-        origin: function (origin, callback) {
-            // Allow Postman / curl / server requests
-            if (!origin) {
-                return callback(null, true);
-            }
 
-            if (allowedOrigins.includes(origin)) {
-                return callback(null, true);
-            }
+/* using all the routes here */
+app.use("/api/auth", authRouter)
+app.use("/api/interview", interviewRouter)
 
-            console.log("CORS blocked:", origin);
 
-            return callback(
-                new Error("Not allowed by CORS")
-            );
-        },
 
-        credentials: true,
-
-        methods: [
-            "GET",
-            "POST",
-            "PUT",
-            "PATCH",
-            "DELETE",
-            "OPTIONS",
-        ],
-
-        allowedHeaders: [
-            "Content-Type",
-            "Authorization",
-        ],
-    })
-);
-
-// ==========================================
-// MIDDLEWARE
-// ==========================================
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-
-// ==========================================
-// ROUTES
-// ==========================================
-
-const authRouter = require("./routes/auth.routes");
-const interviewRouter = require("./routes/interview.routes");
-
-app.use("/api/auth", authRouter);
-app.use("/api/interview", interviewRouter);
-
-// ==========================================
-// HEALTH CHECK
-// ==========================================
-
-app.get("/", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "AI Interview Prep Resume Analyzer API is running",
-    });
-});
-
-// ==========================================
-// INTERVIEW TEST
-// ==========================================
-
-app.get("/api/interview/test", (req, res) => {
-    res.status(200).json({
-        success: true,
-        message: "Interview route is working",
-    });
-});
-
-// ==========================================
-// ERROR HANDLER
-// ==========================================
-
-app.use((err, req, res, next) => {
-    console.error("SERVER ERROR:", err);
-
-    if (err.message === "Not allowed by CORS") {
-        return res.status(403).json({
-            success: false,
-            message: "CORS origin not allowed",
-        });
-    }
-
-    return res.status(500).json({
-        success: false,
-        message: err.message || "Internal Server Error",
-    });
-});
-
-module.exports = app;
+module.exports = app
