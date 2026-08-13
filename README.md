@@ -35,7 +35,7 @@ Using **Google Gemini AI**, the platform generates a personalized interview prep
 
 The application also provides an **AI-powered ATS-friendly resume generator** with PDF export functionality.
 
-LIVE:https://ai-interview-prep-resume-analyzer-16oyl6ofh.vercel.app
+LIVE:https://cute-cheesecake-74835c.netlify.app/
 
 ## ✨ Features
 
